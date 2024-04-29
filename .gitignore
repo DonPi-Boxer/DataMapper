@@ -1,0 +1,8 @@
+.env
+*.csv
+*.json
+/chosen_files/**
+/trash/**
+/.venv/**
+/files/**
+/__pycache__/
