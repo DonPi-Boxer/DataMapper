@@ -1,19 +1,26 @@
 import pandas as pd
 from MetaDataFrameHandler import *
 from Utils import *
+from LabelMapper import *
 ###User input
 ##Define relevant paths
-metadata_file =  '/home/donpi-boxer/BME/Thesis/data/kidney/manifest-xxn3N2Qq630907925598003437/metadata.csv'    #Csv containig the metadata
-root_source_dicom = '/home/donpi-boxer/BME/Thesis/data/kidney/manifest-xxn3N2Qq630907925598003437/TCGA-KIRC'    #Root of the dicoms locally   
+metadata_file =  'files/prostate/metadata.csv'    #Csv containig the metadata
+root_source_dicom = '/data/scratch/r393017/data/prostate/dicom_source'    #Root of the dicoms locally   
 root_gpu_cluster = '/data/scratch/r393017/data_for_dds/prostate/test_data'                                      #Remote root we will move the data to 
-
 
 metadata = MetaDataFrameHandler(source= metadata_file)              #Initialize an instance of the MetaDataHandler class
 metadata.filter_by_key(col='Modality', key='MR')                    #Only keep the MR modalities 
 metadata.remove_nan(cols=['Series Description'])                    #Remove rows where the series description is NaN
 metadata.add_root_to_path(root=root_source_dicom)                   #Add the (local) root to the file paths so we can access the files
 metadata.save_metadata_csv(headers=True)
-metadata.move_processed_metadata_files()                 #Move the files to the remote cluster
+metadata_info = metadata.processed_metadata
+#metadata.move_processed_metadata_files()                           #Move the files to the remote cluster
+
+
+labelMapper = LabelMapper(acronym_dir=Path.cwd() / 'acronyms')                                          #Initialize an instance of the DataLabeler class
+metadata_info['Series Description'] = labelMapper.map_labels(metadata_info['Series Description'])       #Map the labels to our defined labels
+labelMapper.save_unmapped_labels('unmapped_labels.txt')                                                 #Save the unmapped labels to a txt file
+
 
 
 
